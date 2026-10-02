@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scenario Sketchbook</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --bg:#eef1f5;--panel:#ffffff;--ink:#1b2430;--muted:#66758a;--line:#d5dce6;
+  --accent:#2446c9;--accent-ink:#ffffff;--soft:#e4e9fb;--ok:#17794a;--bad:#c0392b;--warn:#a86a00;
+  --chip:#eef1f6;--okbg:#e2f4ea;--badbg:#fbe7e4;
+  --sans:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light dark;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141b;--panel:#171e28;--ink:#e6ebf2;--muted:#8b99ad;--line:#2a3544;
+    --accent:#7b95ff;--accent-ink:#0f141b;--soft:#1f2a4d;--ok:#4cc388;--bad:#ff7a6a;--warn:#e0a84a;
+    --chip:#202a38;--okbg:#14301f;--badbg:#3a1c19;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b;--panel:#171e28;--ink:#e6ebf2;--muted:#8b99ad;--line:#2a3544;
+  --accent:#7b95ff;--accent-ink:#0f141b;--soft:#1f2a4d;--ok:#4cc388;--bad:#ff7a6a;--warn:#e0a84a;
+  --chip:#202a38;--okbg:#14301f;--badbg:#3a1c19;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);min-height:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:14px 16px 60px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:6px 0 14px}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.brand svg{flex:none}
+.projbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.projbar select{max-width:190px}
+.pname{font-weight:600;min-width:180px}
+
+/* controls */
+input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 9px;min-width:0}
+input:hover,select:hover,textarea:hover{border-color:var(--muted)}
+textarea{width:100%;resize:vertical;min-height:54px}
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 11px;font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--chip)}
+.btn.sm{padding:3px 8px;font-size:13px}
+.icon{width:28px;height:28px;padding:0;display:inline-grid;place-items:center;border-radius:6px;border:1px solid transparent;background:transparent;color:var(--muted)}
+.icon:hover{background:var(--chip);color:var(--ink)}
+.icon:disabled{opacity:.3;cursor:default}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:9px 16px 8px;font-weight:600;color:var(--muted);white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab small{font-weight:500;color:var(--muted);margin-left:5px}
+
+/* layout */
+.layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.layout{grid-template-columns:1fr}}
+.side{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;position:sticky;top:8px;max-height:calc(100vh - 24px);display:flex;flex-direction:column}
+@media (max-width:820px){.side{position:static;max-height:none}}
+.sidehead{display:flex;gap:6px;margin-bottom:8px}
+.sidehead input{flex:1}
+#r-list{overflow:auto;display:flex;flex-direction:column;gap:2px;max-height:60vh}
+.li{display:block;width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:7px;padding:7px 9px}
+.li:hover{background:var(--chip)}
+.li.sel{background:var(--soft);border-color:var(--accent)}
+.li b{font-weight:600;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.li .sub{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h3{margin:0 0 8px;font-size:15px;font-weight:700}
+.card h3 .hint{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+.title{font-size:22px;font-weight:700;letter-spacing:-.01em;border-color:transparent;background:transparent;width:100%;padding:3px 6px;margin-left:-6px}
+.title:hover,.title:focus{background:var(--panel);border-color:var(--line)}
+.muted{color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.split{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.section{margin-top:18px}
+.empty{color:var(--muted);padding:10px 2px}
+
+/* badges + chips */
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:99px;padding:1px 8px;background:var(--chip);color:var(--muted)}
+.badge.ok{background:var(--okbg);color:var(--ok)}
+.badge.bad{background:var(--badbg);color:var(--bad)}
+.chip{display:inline-flex;gap:5px;align-items:baseline;background:var(--chip);border-radius:5px;padding:1px 7px;font-size:12.5px;margin:2px 4px 2px 0;white-space:nowrap}
+.chip i{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.chip.agg{box-shadow:inset 2px 0 var(--accent)}
+.chip.compat{box-shadow:inset 2px 0 var(--warn)}
+.chip.min,.chip.max,.chip.avg{box-shadow:inset 2px 0 var(--ok)}
+.chip.first,.chip.last,.chip.list{box-shadow:inset 2px 0 var(--muted)}
+.mono{font-family:var(--mono);font-size:13px}
+
+/* attribute + member rows */
+.arow,.mrow,.vrow{display:grid;gap:8px;align-items:center;padding:3px 0}
+.arow{grid-template-columns:minmax(120px,1fr) minmax(120px,1.2fr) 110px 30px}
+.mrow{grid-template-columns:56px minmax(140px,1fr) minmax(0,2fr) 110px 30px}
+.vrow{grid-template-columns:130px minmax(100px,1fr) 100px 30px}
+.lrow{display:grid;grid-template-columns:minmax(120px,1fr) 64px 110px 30px;gap:8px;align-items:center;padding:3px 0}
+@media (max-width:640px){
+  .arow{grid-template-columns:1fr 1fr 30px}.arow .opnote{display:none}
+  .mrow{grid-template-columns:50px 1fr 90px 30px}.mrow .chips{grid-column:1/-1;order:5}
+}
+.opnote{font-size:12.5px;color:var(--muted)}
+.arow input:first-child,.lrow input:first-child,.vrow input:first-child{font-family:var(--mono);font-size:13px}
+
+/* slots */
+.slot{border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:var(--panel)}
+.slot-h{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.slot-h .gname{font-weight:700;flex:1;min-width:120px}
+.slot-h label{font-size:13px;color:var(--muted);display:flex;gap:5px;align-items:center}
+.slot-h label input{width:76px}
+.opt{display:grid;grid-template-columns:24px minmax(130px,1fr) minmax(0,2fr) auto;gap:8px;align-items:center;padding:6px 10px;border-top:1px solid var(--line)}
+.opt:first-of-type{border-top:0}
+.opt.off{opacity:.55}
+.opt .nm{font-weight:500}
+.opt.picked{background:var(--soft)}
+.opt label.ex{font-size:12.5px;color:var(--muted);display:flex;gap:4px;align-items:center;white-space:nowrap}
+@media (max-width:640px){.opt{grid-template-columns:24px 1fr auto}.opt .chips{grid-column:2/-1}}
+
+/* results */
+.verdict{display:flex;gap:12px;align-items:center;border-radius:9px;padding:10px 14px;font-weight:600;margin-bottom:12px}
+.verdict.ok{background:var(--okbg);color:var(--ok)}
+.verdict.bad{background:var(--badbg);color:var(--bad)}
+.verdict.none{background:var(--chip);color:var(--muted)}
+.verdict small{font-weight:400;display:block;color:inherit;opacity:.9}
+.gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.gauge .gl{display:flex;justify-content:space-between;font-size:13px;gap:8px}
+.gauge .gl b{font-family:var(--mono);font-weight:500;font-size:12.5px}
+.gauge .bar{height:10px;border-radius:99px;background:var(--chip);margin:5px 0 3px;position:relative;overflow:hidden}
+.gauge .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:99px}
+.gauge.bad .fill{background:var(--bad)}
+.gauge.ok .fill{background:var(--ok)}
+.gauge .gs{font-size:12.5px;color:var(--muted)}
+.scroll{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:600;color:var(--muted);font-size:13px;vertical-align:bottom}
+td.tot{font-weight:700}
+td.bad,.bad{color:var(--bad)}
+td.ok{color:var(--ok)}
+th small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
+.rowkey{font-family:var(--mono);font-size:12.5px}
+td.txt{text-align:left;white-space:normal}
+.th{background:none;border:0;padding:0;font-weight:600;color:inherit}
+.th:hover{color:var(--ink)}
+.th.on{color:var(--accent)}
+tr.fit td:first-child{box-shadow:inset 3px 0 var(--ok)}
+tr.nofit td:first-child{box-shadow:inset 3px 0 var(--bad)}
+tr.nofit{color:var(--muted)}
+.notes{margin:8px 0 0;padding:0;list-style:none;font-size:13.5px}
+.notes li{padding:2px 0}
+.notes .w{color:var(--warn)}
+details.legend{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+details.legend summary{cursor:pointer;font-weight:600}
+details.legend table{margin-top:8px}
+details.legend td{text-align:left;white-space:normal;vertical-align:top}
+.datapanel textarea{font-family:var(--mono);font-size:12px;min-height:110px}
+.kbd{font-family:var(--mono);background:var(--chip);border-radius:4px;padding:0 5px;font-size:12.5px}
+.badge.warn{background:var(--chip);color:var(--warn)}
+.syncbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.syncbar input{flex:1;min-width:160px}
+.jr{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px}
+.jr:first-child{border-top:0}
+.jr .rv{font-family:var(--mono);color:var(--muted)}
+.jr small{display:block;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.fill{transition:width .25s ease}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<datalist id="keys"></datalist>
+
+<script>
+/* ============ utilities ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-3);
+const fmt = n => typeof n !== 'number' || !isFinite(n) ? String(n) :
+  n.toLocaleString(undefined, {maximumFractionDigits: 2});
+const num = v => { const s = String(v ?? '').trim().replace(/[,$€£]/g, ''); return s !== '' && isFinite(+s) ? +s : NaN; };
+const move = (arr, i, d) => { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; };
+
+/* ============ storage (private to this browser) ============ */
+const mem = {};
+const store = {
+  broken: false,
+  get(k){ try { return localStorage.getItem(k); } catch(e){ store.broken = true; return mem[k] ?? null; } },
+  set(k,v){ try { localStorage.setItem(k, v); } catch(e){ store.broken = true; mem[k] = v; } },
+  del(k){ try { localStorage.removeItem(k); } catch(e){ delete mem[k]; } }
+};
+let index = [], doc = null, saveT = null;
+const saveIndex = () => store.set('pp.index', JSON.stringify(index));
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(() => {
+    store.set('pp.doc.' + doc.id, JSON.stringify(doc));
+    const e = index.find(i => i.id === doc.id); if (e && e.name !== doc.name){ e.name = doc.name; saveIndex(); }
+    refreshSyncUI();
+  }, 150);
+}
+
+/* ============ attribute prefix operations ============ */
+const OPS = {
+  agg:   ['sum',            'Adds values, each × its quantity. Costs, weights, watts, hours.'],
+  avg:   ['average',        'Plain average of the values.'],
+  min:   ['lowest',         'Smallest value among components that carry it.'],
+  max:   ['highest',        'Largest value. Handy for “worst case” such as walking time.'],
+  compat:['must match',     'Every component carrying it must share a value. Separate alternatives with | (ATX|mATX): the sets must overlap.'],
+  first: ['first in order', 'Value from the first component (by slot, then member order).'],
+  last:  ['last in order',  'Value from the last component.'],
+  list:  ['ordered list',   'All values joined in order, e.g. an itinerary.']
+};
+const NUMERIC_OPS = ['agg','avg','min','max'];
+const opOf = k => { const i = String(k).indexOf('_'); if (i < 1) return null; const p = k.slice(0, i).toLowerCase(); return OPS[p] ? p : null; };
+const opLabel = k => opOf(k) ? OPS[opOf(k)][0] : '';
+
+function evalExpr(src, vars){
+  const t = src.match(/\s*(\d+\.?\d*|\.\d+|[A-Za-z_]\w*|[()+\-*/])/g);
+  if (!t || t.join('').replace(/\s/g,'') !== src.replace(/\s/g,'')) throw 0;
+  let i = 0; const peek = () => t[i]?.trim(), nxt = () => { if (i >= t.length) throw 0; return t[i++].trim(); };
+  const prim = () => { const x = nxt();
+    if (x === '('){ const v = add(); if (nxt() !== ')') throw 0; return v; }
+    if (x === '-') return -prim();
+    if (/^[\d.]/.test(x)) return +x;
+    if (x in vars) return vars[x]; throw 0; };
+  const mul = () => { let v = prim(); while (peek()==='*'||peek()==='/'){ const o = nxt(), r = prim(); v = o==='*' ? v*r : v/r; } return v; };
+  const add = () => { let v = mul(); while (peek()==='+'||peek()==='-'){ const o = nxt(), r = mul(); v = o==='+' ? v+r : v-r; } return v; };
+  const v = add(); if (i < t.length) throw 0; return v;
+}
+function qtyOf(str, vars, issues){
+  const s = String(str ?? '1').trim(); if (s === '') return 1;
+  const n = num(s); if (!isNaN(n)) return n;
+  try { const v = evalExpr(s, vars); if (isFinite(v)) return v; } catch(e){}
+  issues.add(`Can’t read quantity “${s}”. Use a number, a variable name, or an expression like days*people.`);
+  return 1;
+}
+
+/* ============ model helpers ============ */
+const comp = id => doc.components.find(c => c.id === id);
+const grp  = id => doc.groups.find(g => g.id === id);
+const scn  = id => doc.scenarios.find(s => s.id === id);
+const parseVals = s => String(s ?? '').split(/[,\s]+/).map(num).filter(n => !isNaN(n));
+function varMap(s){
+  const m = Object.create(null);
+  s.vars.forEach(v => { if (!v.name) return; const vs = parseVals(v.values); m[v.name.trim()] = vs.length ? vs[Math.min(v.cur || 0, vs.length - 1)] : 0; });
+  return m;
+}
+const liveMembers = g => g.members.map((m,i) => i).filter(i => comp(g.members[i].cid));
+
+function fixSlots(s){
+  s.slots = s.slots.filter(sl => grp(sl.gid));
+  s.slots.forEach(sl => {
+    const g = grp(sl.gid); sl.sel = sl.sel || []; sl.excl = sl.excl || [];
+    const ids = g.members.map(m => m.cid);
+    sl.sel = sl.sel.filter(c => ids.includes(c)); sl.excl = sl.excl.filter(c => ids.includes(c));
+    if (g.mode === 'one' && !sl.sel.length && ids.length) sl.sel = [ids.find(c => comp(c) && !sl.excl.includes(c)) || ids.find(c => comp(c)) || ids[0]];
+  });
+}
+function curSel(sl){
+  const g = grp(sl.gid); if (!g) return [];
+  const all = liveMembers(g);
+  if (g.mode === 'all') return all;
+  const idx = all.filter(i => (sl.sel || []).includes(g.members[i].cid));
+  return g.mode === 'one' ? idx.slice(0, 1) : idx;
+}
+function slotOptions(sl){
+  const g = grp(sl.gid); if (!g) return [[]];
+  const all = liveMembers(g);
+  if (g.mode === 'all') return [all];
+  const cand = all.filter(i => !(sl.excl || []).includes(g.members[i].cid));
+  if (g.mode === 'one') return cand.length ? cand.map(i => [i]) : [[]];
+  const c = cand.slice(0, 10), out = [];
+  for (let m = 0; m < (1 << c.length); m++) out.push(c.filter((_, j) => (m >> j) & 1));
+  return out;
+}
+
+/* ============ the engine: roll attributes up by prefix ============ */
+function rollup(items){
+  const keys = new Map();
+  for (const it of items) for (const a of it.comp.attrs){
+    if (!a.k) continue;
+    if (!keys.has(a.k)) keys.set(a.k, []);
+    keys.get(a.k).push({v: a.v, qty: it.qty, it});
+  }
+  const out = {};
+  for (const [k, arr] of keys){
+    const op = opOf(k), r = {k, op, ok: true, value: null, text: ''};
+    if (NUMERIC_OPS.includes(op)){
+      const vals = arr.map(x => num(x.v));
+      if (vals.some(isNaN)){ r.ok = false; r.text = 'not a number'; }
+      else {
+        r.value = op === 'agg' ? arr.reduce((s, x, i) => s + vals[i] * x.qty, 0)
+                : op === 'avg' ? vals.reduce((a, b) => a + b, 0) / vals.length
+                : op === 'min' ? Math.min(...vals) : Math.max(...vals);
+        r.text = fmt(r.value);
+      }
+    } else if (op === 'compat'){
+      let inter = null;
+      for (const x of arr){
+        const m = new Map(String(x.v).split('|').map(z => z.trim()).filter(Boolean).map(z => [z.toLowerCase(), z]));
+        inter = inter === null ? m : new Map([...inter].filter(([z]) => m.has(z)));
+      }
+      r.ok = inter.size > 0; r.value = [...inter.values()].join('|');
+      r.text = r.ok ? r.value : 'conflict';
+      if (!r.ok) r.detail = arr.map(x => `${x.it.comp.name}: ${x.v}`);
+    } else if (op === 'first'){ r.text = r.value = arr[0].v; }
+    else if (op === 'last'){ r.text = r.value = arr[arr.length - 1].v; }
+    else if (op === 'list'){ r.text = arr.map(x => x.v).join(' → '); }
+    else r.text = arr.map(x => x.v).join(', ');
+    out[k] = r;
+  }
+  return out;
+}
+
+function evaluate(s, pick, full = true){
+  const issues = new Set(), vars = pick.vars, items = [], perSlot = [];
+  s.slots.forEach((sl, si) => {
+    const g = grp(sl.gid), list = [];
+    if (g){
+      const sq = qtyOf(sl.qty, vars, issues);
+      (pick.slots[si] || []).forEach(i => {
+        const m = g.members[i], c = m && comp(m.cid); if (!c) return;
+        list.push({si, comp: c, member: m, qty: sq * qtyOf(m.qty, vars, issues)});
+      });
+    }
+    perSlot.push(list); items.push(...list);
+  });
+  const totals = rollup(items);
+  const slotTotals = full ? perSlot.map(rollup) : null;
+  const checks = s.limits.filter(l => l.k).map(l => {
+    const t = totals[l.k], a = t && typeof t.value === 'number' ? t.value : 0, L = num(l.v);
+    const ok = isNaN(L) ? true : l.op === '<=' ? a <= L : l.op === '>=' ? a >= L : Math.abs(a - L) < 1e-9;
+    return {l, a, L, ok};
+  });
+  const conflicts = Object.values(totals).filter(t => t.op === 'compat' && !t.ok);
+  const valid = checks.every(c => c.ok) && !conflicts.length;
+  return {items, perSlot, totals, slotTotals, checks, conflicts, valid, issues, pick};
+}
+const curPick = s => ({slots: s.slots.map(curSel), vars: varMap(s)});
+
+function explore(s, cap = 20000){
+  const slotOpts = s.slots.map(slotOptions);
+  const varDefs = s.vars.filter(v => v.name).map(v => { const vals = parseVals(v.values); return {name: v.name.trim(), vals: vals.length ? vals : [0]}; });
+  const sizes = [...slotOpts.map(o => o.length), ...varDefs.map(v => v.vals.length)];
+  const total = sizes.reduce((a, b) => a * b, 1);
+  if (total > cap) return {total, tooMany: true};
+  const rows = [], idx = new Array(sizes.length).fill(0), ns = slotOpts.length;
+  for (let n = 0; n < total; n++){
+    const vars = Object.create(null), vi = [];
+    varDefs.forEach((v, k) => { vars[v.name] = v.vals[idx[ns + k]]; vi.push(idx[ns + k]); });
+    const pick = {slots: slotOpts.map((o, i) => o[idx[i]]), vars};
+    rows.push({pick, vi, ev: evaluate(s, pick, false)});
+    for (let d = sizes.length - 1; d >= 0; d--){ if (++idx[d] < sizes[d]) break; idx[d] = 0; }
+  }
+  return {total, rows, slotOpts, varDefs};
+}
+
+/* ============ seed data ============ */
+const mk = name => ({id: uid(), name, components: [], groups: [], scenarios: []});
+const addC = (d, name, attrs, notes = '') => { const c = {id: uid(), name, notes, attrs: Object.entries(attrs).map(([k, v]) => ({k, v: String(v)}))}; d.components.push(c); return c; };
+const addG = (d, name, mode, cs, qty = {}) => { const g = {id: uid(), name, mode, members: cs.map(c => ({cid: c.id, qty: qty[c.name] || qty['*'] || '1'}))}; d.groups.push(g); return g; };
+const addS = (d, name, slots, limits, vars = []) => { const s = {id: uid(), name, vars, limits, slots: slots.map(x => ({gid: x.g.id, qty: x.qty || '1', sel: [], excl: (x.excl || []).map(c => c.id)}))}; d.scenarios.push(s); return s; };
+
+function seedPC(){
+  const d = mk('Home PC build (example)');
+  const c1 = addC(d,'Ryzen 5 7600',{agg_cost:210,agg_watts:65,compat_socket:'AM5'});
+  const c2 = addC(d,'Ryzen 7 7700',{agg_cost:300,agg_watts:65,compat_socket:'AM5'});
+  const c3 = addC(d,'Core i5-14600K',{agg_cost:320,agg_watts:125,compat_socket:'LGA1700'});
+  const b1 = addC(d,'B650 ATX board',{agg_cost:180,agg_watts:40,compat_socket:'AM5',compat_memory:'DDR5',compat_form:'ATX'});
+  const b2 = addC(d,'B650M mATX board',{agg_cost:140,agg_watts:35,compat_socket:'AM5',compat_memory:'DDR5',compat_form:'mATX'});
+  const b3 = addC(d,'Z790 ATX board (DDR5)',{agg_cost:230,agg_watts:45,compat_socket:'LGA1700',compat_memory:'DDR5',compat_form:'ATX'});
+  const b4 = addC(d,'Z790 ATX board (DDR4)',{agg_cost:190,agg_watts:45,compat_socket:'LGA1700',compat_memory:'DDR4',compat_form:'ATX'});
+  const m1 = addC(d,'32GB DDR5-6000',{agg_cost:110,agg_watts:8,agg_ram_gb:32,compat_memory:'DDR5'});
+  const m2 = addC(d,'16GB DDR5-5600',{agg_cost:60,agg_watts:6,agg_ram_gb:16,compat_memory:'DDR5'});
+  const m3 = addC(d,'32GB DDR4-3200',{agg_cost:70,agg_watts:8,agg_ram_gb:32,compat_memory:'DDR4'});
+  const g1 = addC(d,'RTX 4060',{agg_cost:300,agg_watts:115});
+  const g2 = addC(d,'RX 7700 XT',{agg_cost:400,agg_watts:245});
+  const g3 = addC(d,'RTX 4070 Super',{agg_cost:600,agg_watts:220});
+  const k1 = addC(d,'Mid-tower mesh case',{agg_cost:90,compat_form:'ATX|mATX'});
+  const k2 = addC(d,'Compact mATX case',{agg_cost:75,compat_form:'mATX|ITX'});
+  const f1 = addC(d,'1TB NVMe SSD',{agg_cost:70,agg_watts:5});
+  const f2 = addC(d,'650W PSU',{agg_cost:80,min_psu_w:650});
+  const G = {
+    cpu: addG(d,'CPU','one',[c1,c2,c3]), mb: addG(d,'Motherboard','one',[b1,b2,b3,b4]),
+    mem: addG(d,'Memory','one',[m1,m2,m3]), gpu: addG(d,'GPU','one',[g1,g2,g3]),
+    cs: addG(d,'Case','one',[k1,k2]), fx: addG(d,'Fixed parts','all',[f1,f2])
+  };
+  const slots = (extra = {}) => ['cpu','mb','mem','gpu','cs','fx'].map(k => ({g: G[k], ...(extra[k] || {})}));
+  addS(d,'Mainstream build', slots(), [{k:'agg_cost',op:'<=',v:'1100'},{k:'agg_watts',op:'<=',v:'450'}]);
+  addS(d,'Compact build', slots({cs:{excl:[k1]}}), [{k:'agg_cost',op:'<=',v:'1000'},{k:'agg_ram_gb',op:'>=',v:'32'}]);
+  return d;
+}
+function seedTrip(){
+  const d = mk('Disney trips (example)');
+  const a1 = addC(d,'AirA to LAX',{agg_cost:380,first_depart:'07:10'});
+  const a2 = addC(d,'AirB to LAX',{agg_cost:450,first_depart:'09:40'});
+  const a3 = addC(d,'AirC to LAX',{agg_cost:520,first_depart:'13:15'});
+  const h1 = addC(d,'Value Inn Anaheim',{agg_cost:120,max_walk_min:25});
+  const h2 = addC(d,'Mid Resort Anaheim',{agg_cost:220,max_walk_min:12});
+  const h3 = addC(d,'Park Hotel',{agg_cost:380,max_walk_min:3});
+  const t1 = addC(d,'Disneyland ticket (1 day)',{agg_cost:150});
+  const i1 = addC(d,'Travel insurance',{agg_cost:60},'Reused by both trips through the “Common extras” group.');
+  const p1 = addC(d,'AirD to CDG',{agg_cost:620,first_depart:'18:30'});
+  const p2 = addC(d,'AirE to CDG',{agg_cost:740,first_depart:'11:05'});
+  const r1 = addC(d,'Metro/RER day pass',{agg_cost:17});
+  const r2 = addC(d,'Taxi / rideshare',{agg_cost:40});
+  const r3 = addC(d,'Rental car + parking',{agg_cost:65});
+  const r4 = addC(d,'Walk + resort shuttle',{agg_cost:0});
+  const q1 = addC(d,'On-site hotel',{agg_cost:290,max_walk_min:3});
+  const q2 = addC(d,'Off-site 3-star',{agg_cost:140,max_walk_min:20});
+  const t2 = addC(d,'Disneyland Paris ticket (1 day)',{agg_cost:70});
+  const G = {
+    fl: addG(d,'Flights to LAX','one',[a1,a2,a3],{'*':'people'}),
+    ho: addG(d,'Anaheim hotels','one',[h1,h2,h3],{'*':'days-1'}),
+    tk: addG(d,'Disneyland tickets','all',[t1],{'*':'days*people'}),
+    ex: addG(d,'Common extras','all',[i1],{'*':'people'}),
+    pf: addG(d,'Flights to Paris','one',[p1,p2],{'*':'people'}),
+    pt: addG(d,'Paris local transport','one',[r1,r2,r3,r4],{'Metro/RER day pass':'days*people','*':'days'}),
+    ph: addG(d,'Paris hotels','one',[q1,q2],{'*':'days-1'}),
+    pk: addG(d,'Disneyland Paris tickets','all',[t2],{'*':'days*people'})
+  };
+  const vars = () => [{name:'days',values:'3,4,5',cur:1},{name:'people',values:'2,3',cur:0}];
+  addS(d,'Disneyland, California',[{g:G.fl},{g:G.ho},{g:G.tk},{g:G.ex}],[{k:'agg_cost',op:'<=',v:'4000'}],vars());
+  addS(d,'Disneyland Paris',[{g:G.pf},{g:G.ph},{g:G.pt},{g:G.pk},{g:G.ex}],[{k:'agg_cost',op:'<=',v:'4500'},{k:'max_walk_min',op:'<=',v:'15'}],vars());
+  return d;
+}
+
+/* ============ projects ============ */
+function openProject(id){
+  try { doc = JSON.parse(store.get('pp.doc.' + id)); } catch(e){ doc = null; }
+  if (!doc){ index = index.filter(i => i.id !== id); saveIndex(); if (!index.length) return seedAll(); return openProject(index[0].id); }
+  ['components','groups','scenarios'].forEach(k => doc[k] = doc[k] || []);
+  doc.scenarios.forEach(s => { s.vars = s.vars || []; s.limits = s.limits || []; s.slots = s.slots || []; });
+  store.set('pp.cur', id);
+  ui.cid = doc.components[0]?.id || null; ui.gid = doc.groups[0]?.id || null; ui.sid = doc.scenarios[0]?.id || null;
+  ui.search = ''; ui.armed = null;
+}
+function seedAll(){
+  [seedPC(), seedTrip()].forEach(d => { store.set('pp.doc.' + d.id, JSON.stringify(d)); index.push({id: d.id, name: d.name}); });
+  saveIndex();
+}
+function loadAll(){
+  try { index = JSON.parse(store.get('pp.index') || '[]'); } catch(e){ index = []; }
+  if (!index.length) seedAll();
+  let cur = store.get('pp.cur'); if (!index.find(i => i.id === cur)) cur = index[0].id;
+  openProject(cur);
+}
+function addProject(d){
+  store.set('pp.doc.' + d.id, JSON.stringify(d)); index.push({id: d.id, name: d.name}); saveIndex(); openProject(d.id);
+}
+
+/* ============ UI state ============ */
+const ui = {sync:false, tab:'scenarios', cid:null, gid:null, sid:null, search:'', armed:null, data:false, msg:'', sortK:null, sortDir:1, onlyFit:false, rows:[]};
+const curC = () => comp(ui.cid), curG = () => grp(ui.gid), curS = () => scn(ui.sid);
+
+/* ============ rendering ============ */
+const chip = a => { const op = opOf(a.k); return `<span class="chip ${op || ''}" title="${esc(a.k)}${op ? ' — ' + OPS[op][0] : ''}"><i>${esc(a.k)}</i>${esc(a.v)}</span>`; };
+const chips = c => c.attrs.filter(a => a.k).map(chip).join('');
+const modeName = m => ({all:'all of', one:'pick one', any:'pick any'}[m]);
+const attrKeys = () => { const s = new Set(); doc.components.forEach(c => c.attrs.forEach(a => a.k && s.add(a.k))); return [...s].sort(); };
+const iconBtn = (act, label, svg, extra = '') => `<button class="icon" data-act="${act}" ${extra} aria-label="${label}" title="${label}">${svg}</button>`;
+const I = {
+  up:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l4-4 4 4"/></svg>',
+  down:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5l4 4 4-4"/></svg>',
+  x:'<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l8 8M11 3l-8 8"/></svg>'
+};
+const armBtn = (key, act, label, extra = '') => `<button class="btn danger sm ${ui.armed === key ? 'armed' : ''}" data-act="${act}" ${extra}>${ui.armed === key ? 'Click again to confirm' : label}</button>`;
+function arm(key){
+  if (ui.armed === key){ ui.armed = null; return true; }
+  ui.armed = key; setTimeout(() => { if (ui.armed === key){ ui.armed = null; render(); } }, 3500); render(); return false;
+}
+
+function render(focus){
+  fixAll();
+  $('#keys').innerHTML = attrKeys().map(k => `<option value="${esc(k)}">`).join('');
+  const t = ui.tab;
+  const newAct = {components:'cNew', groups:'gNew', scenarios:'sNew'}[t];
+  $('#app').innerHTML = `
+  <header class="top">
+    <div class="brand"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12" /></svg>Scenario Sketchbook</div>
+    <div class="projbar">
+      <select data-bind="projSel" aria-label="Project">${index.map(p => `<option value="${p.id}" ${p.id === doc.id ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
+      <input class="pname" data-bind="projName" value="${esc(doc.name)}" aria-label="Project name">
+      <button class="btn" data-act="projNew">New project</button>
+      ${index.length > 1 ? armBtn('pdel', 'projDel', 'Delete') : ''}
+      <button class="btn" id="syncBtn" data-act="toggleSync" hidden>Sync <span id="syncBadge" class="badge"></span></button>
+      <button class="btn" data-act="toggleData">${ui.data ? 'Close data' : 'Data'}</button>
+    </div>
+  </header>
+  ${store.broken ? '<div class="verdict bad">This browser blocks storage, so changes will be lost when you close the page. Use Data → copy the JSON to keep your work.</div>' : ''}
+  ${ui.data ? dataPanel() : ''}
+  ${ui.sync && (sync.mode === 'on' || sync.mode === 'login') ? '<div id="r-sync" style="margin-bottom:14px"></div>' : ''}
+  <nav class="tabs" role="tablist">
+    ${[['components','Components',doc.components.length],['groups','Groups',doc.groups.length],['scenarios','Scenarios',doc.scenarios.length]]
+      .map(([k, n, c]) => `<button class="tab" role="tab" aria-selected="${t === k}" data-act="tab" data-tab="${k}">${n}<small>${c}</small></button>`).join('')}
+  </nav>
+  <div class="layout">
+    <aside class="side">
+      <div class="sidehead"><input data-bind="search" placeholder="Search" value="${esc(ui.search)}" aria-label="Search"><button class="btn primary" data-act="${newAct}">New</button></div>
+      <div id="r-list"></div>
+    </aside>
+    <section class="main">
+      ${t === 'components' ? legend() : ''}
+      <div id="r-editor"></div>
+      ${t === 'scenarios' ? '<div id="r-summary"></div><div id="r-explore"></div>' : ''}
+    </section>
+  </div>`;
+  fillRegions(['list','editor','summary','explore']);
+  refreshSyncUI();
+  if (focus) $(focus)?.focus();
+}
+function fillRegions(names){
+  const f = {list: listHTML, editor: editorHTML, summary: summaryHTML, explore: exploreHTML};
+  names.forEach(n => { const el = $('#r-' + n); if (el) el.innerHTML = f[n](); });
+}
+function fixAll(){ doc.scenarios.forEach(fixSlots); }
+
+function legend(){
+  return `<details class="legend"><summary>How attribute names work</summary>
+  <p class="muted" style="margin:8px 0 0">The text before the first underscore decides how an attribute is combined across a group or scenario. Anything else is just a note.</p>
+  <div class="scroll"><table><tbody>${Object.entries(OPS).map(([p, [n, d]]) => `<tr><td class="rowkey">${p}_…</td><td><b>${n}</b></td><td>${d}</td></tr>`).join('')}</tbody></table></div></details>`;
+}
+
+function dataPanel(){
+  return `<div class="card datapanel" style="margin-bottom:14px">
+    <h3>Project data <span class="hint">Stored only in this browser. Copy the JSON to back it up or move it.</span></h3>
+    <textarea id="exportTa" readonly aria-label="Project JSON">${esc(JSON.stringify(doc, null, 1))}</textarea>
+    <div class="row" style="margin:8px 0 14px"><button class="btn" data-act="dataCopy">Copy JSON</button>${ui.msg ? `<span class="muted">${esc(ui.msg)}</span>` : ''}</div>
+    <h3>Import a project</h3>
+    <textarea id="importTa" placeholder="Paste exported JSON here" aria-label="Paste project JSON"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="dataImport">Import as new project</button><button class="btn" data-act="dataExamples">Add the two example projects</button></div>
+  </div>`;
+}
+
+/* ---- list region ---- */
+function listHTML(){
+  const q = ui.search.trim().toLowerCase(), t = ui.tab;
+  const hit = (...s) => !q || s.join(' ').toLowerCase().includes(q);
+  let rows = '';
+  if (t === 'components'){
+    rows = doc.components.filter(c => hit(c.name, c.attrs.map(a => a.k + ' ' + a.v).join(' '))).map(c => {
+      const used = doc.groups.filter(g => g.members.some(m => m.cid === c.id)).length;
+      return `<button class="li ${c.id === ui.cid ? 'sel' : ''}" data-act="cSel" data-id="${c.id}"><b>${esc(c.name || 'Untitled')}${used ? `<span class="badge">${used} grp</span>` : ''}</b><span class="sub">${esc(c.attrs.filter(a => opOf(a.k)).slice(0, 3).map(a => a.k.replace(/^[a-z]+_/i, '') + ' ' + a.v).join(' · ') || 'no attributes')}</span></button>`;
+    }).join('') || '<div class="empty">No components yet. Add one to start.</div>';
+  } else if (t === 'groups'){
+    rows = doc.groups.filter(g => hit(g.name)).map(g =>
+      `<button class="li ${g.id === ui.gid ? 'sel' : ''}" data-act="gSel" data-id="${g.id}"><b>${esc(g.name || 'Untitled')}<span class="badge">${modeName(g.mode)}</span></b><span class="sub">${g.members.length} component${g.members.length === 1 ? '' : 's'}</span></button>`
+    ).join('') || '<div class="empty">No groups yet. A group holds components that belong together.</div>';
+  } else {
+    rows = doc.scenarios.filter(s => hit(s.name)).map(s => {
+      fixSlots(s); const ev = evaluate(s, curPick(s), false), lim = s.limits.some(l => l.k);
+      return `<button class="li ${s.id === ui.sid ? 'sel' : ''}" data-act="sSel" data-id="${s.id}"><b>${esc(s.name || 'Untitled')}${lim || ev.conflicts.length ? `<span class="badge ${ev.valid ? 'ok' : 'bad'}">${ev.valid ? 'fits' : 'over'}</span>` : ''}</b><span class="sub">${s.slots.length} group${s.slots.length === 1 ? '' : 's'}</span></button>`;
+    }).join('') || '<div class="empty">No scenarios yet. A scenario combines groups into one design.</div>';
+  }
+  return rows;
+}
+
+/* ---- editor region ---- */
+function editorHTML(){ return ({components: compEditor, groups: groupEditor, scenarios: scnEditor}[ui.tab])(); }
+
+function compEditor(){
+  const c = curC();
+  if (!c) return '<div class="card empty">Select or create a component. A component is one small thing with attributes, like a CPU with a cost and a socket.</div>';
+  const used = doc.groups.filter(g => g.members.some(m => m.cid === c.id));
+  return `<div class="card">
+    <input class="title" data-bind="c.name" value="${esc(c.name)}" placeholder="Component name" aria-label="Component name">
+    <textarea data-bind="c.notes" placeholder="Notes" aria-label="Notes" style="margin:6px 0 10px">${esc(c.notes)}</textarea>
+    <h3>Attributes <span class="hint">Prefix picks the rule: agg_cost, compat_socket, max_walk_min…</span></h3>
+    ${c.attrs.map((a, i) => `<div class="arow">
+      <input data-bind="a.k" data-i="${i}" list="keys" value="${esc(a.k)}" placeholder="agg_cost" aria-label="Attribute name">
+      <input data-bind="a.v" data-i="${i}" value="${esc(a.v)}" placeholder="value" aria-label="Attribute value">
+      <span class="opnote">${esc(opLabel(a.k))}</span>
+      ${iconBtn('delAttr', 'Remove attribute', I.x, `data-i="${i}"`)}</div>`).join('')}
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="addAttr">Add attribute</button></div>
+    <div class="section"><h3>Used in groups</h3>
+      ${used.length ? used.map(g => `<button class="btn sm" data-act="gotoG" data-id="${g.id}">${esc(g.name)}</button>`).join(' ') : '<span class="muted">Not in any group yet. Add it from the Groups tab.</span>'}</div>
+    <div class="row section"><button class="btn sm" data-act="cDup">Duplicate</button>${armBtn('cdel', 'cDel', 'Delete component')}</div>
+  </div>`;
+}
+
+function groupEditor(){
+  const g = curG();
+  if (!g) return '<div class="card empty">Select or create a group. A group is a set of components that are taken together, or chosen between.</div>';
+  const avail = doc.components.filter(c => !g.members.some(m => m.cid === c.id));
+  const inScn = doc.scenarios.filter(s => s.slots.some(sl => sl.gid === g.id));
+  return `<div class="card">
+    <input class="title" data-bind="g.name" value="${esc(g.name)}" placeholder="Group name" aria-label="Group name">
+    <div class="row" style="margin:6px 0 12px"><label class="muted" for="gmode">In a scenario, this group is</label>
+      <select id="gmode" data-bind="g.mode">
+        <option value="all" ${g.mode === 'all' ? 'selected' : ''}>all of its components (a bundle)</option>
+        <option value="one" ${g.mode === 'one' ? 'selected' : ''}>pick one component (alternatives)</option>
+        <option value="any" ${g.mode === 'any' ? 'selected' : ''}>pick any subset (optional extras)</option></select></div>
+    <h3>Components in this group <span class="hint">Order matters for first_, last_ and list_ attributes. Quantity takes a number, a scenario variable, or an expression like days*people.</span></h3>
+    ${g.members.length ? g.members.map((m, i) => { const c = comp(m.cid); return `<div class="mrow">
+      <div class="row" style="gap:0">${iconBtn('mUp','Move up',I.up,`data-i="${i}" ${i === 0 ? 'disabled' : ''}`)}${iconBtn('mDown','Move down',I.down,`data-i="${i}" ${i === g.members.length - 1 ? 'disabled' : ''}`)}</div>
+      <button class="btn ghost" style="text-align:left;font-weight:600" data-act="gotoC" data-id="${m.cid}">${esc(c?.name || 'Missing')}</button>
+      <div class="chips">${c ? chips(c) : ''}</div>
+      <input data-bind="m.qty" data-i="${i}" value="${esc(m.qty)}" placeholder="qty" aria-label="Quantity" title="Quantity">
+      ${iconBtn('mDel','Remove from group',I.x,`data-i="${i}"`)}</div>`; }).join('') : '<div class="empty">Empty. Add components below.</div>'}
+    <div class="row" style="margin-top:10px">
+      <select data-bind="g.addMember" aria-label="Add component"><option value="">Add existing component</option>${avail.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
+      <button class="btn sm" data-act="gNewComp">Create new component</button></div>
+    <div class="section"><h3>Used in scenarios</h3>${inScn.length ? inScn.map(s => `<button class="btn sm" data-act="gotoS" data-id="${s.id}">${esc(s.name)}</button>`).join(' ') : '<span class="muted">No scenario uses this group yet.</span>'}</div>
+    <div class="row section"><button class="btn sm" data-act="gDup">Duplicate</button>${armBtn('gdel', 'gDel', 'Delete group')}</div>
+  </div>`;
+}
+
+function scnEditor(){
+  const s = curS();
+  if (!s) return '<div class="card empty">Select or create a scenario. A scenario glues groups together and totals everything.</div>';
+  const vm = varMap(s);
+  return `<div class="card">
+    <input class="title" data-bind="s.name" value="${esc(s.name)}" placeholder="Scenario name" aria-label="Scenario name">
+
+    <div class="section" style="margin-top:8px"><h3>Variables <span class="hint">Give several values (3,4,5) to explore them. Use the name in any quantity.</span></h3>
+    ${s.vars.map((v, i) => { const vs = parseVals(v.values); return `<div class="vrow">
+      <input data-bind="v.name" data-i="${i}" value="${esc(v.name)}" placeholder="days" aria-label="Variable name">
+      <input data-bind="v.values" data-i="${i}" value="${esc(v.values)}" placeholder="3,4,5" aria-label="Values">
+      <select data-bind="v.cur" data-i="${i}" aria-label="Current value">${vs.map((x, k) => `<option value="${k}" ${k === (v.cur || 0) ? 'selected' : ''}>now ${fmt(x)}</option>`).join('')}</select>
+      ${iconBtn('delVar', 'Remove variable', I.x, `data-i="${i}"`)}</div>`; }).join('')}
+    <button class="btn sm" data-act="addVar" style="margin-top:4px">Add variable</button></div>
+
+    <div class="section"><h3>The box <span class="hint">Limits this scenario has to fit inside.</span></h3>
+    ${s.limits.map((l, i) => `<div class="lrow">
+      <input data-bind="l.k" data-i="${i}" list="keys" value="${esc(l.k)}" placeholder="agg_cost" aria-label="Attribute">
+      <select data-bind="l.op" data-i="${i}" aria-label="Comparison">${['<=','>=','='].map(o => `<option ${l.op === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
+      <input data-bind="l.v" data-i="${i}" value="${esc(l.v)}" placeholder="1000" aria-label="Limit">
+      ${iconBtn('delLimit', 'Remove limit', I.x, `data-i="${i}"`)}</div>`).join('')}
+    <button class="btn sm" data-act="addLimit" style="margin-top:4px">Add limit</button></div>
+
+    <div class="section"><h3>Groups in this scenario <span class="hint">Order is kept for first_, last_ and list_ attributes.</span></h3>
+    ${s.slots.length ? s.slots.map((sl, si) => slotHTML(s, sl, si, vm)).join('') : '<div class="empty">No groups yet. Add one below.</div>'}
+    <div class="row"><select data-bind="s.addSlot" aria-label="Add group"><option value="">Add a group</option>${doc.groups.map(g => `<option value="${g.id}">${esc(g.name)} (${modeName(g.mode)})</option>`).join('')}</select></div></div>
+
+    <div class="row section"><button class="btn sm" data-act="sDup">Duplicate scenario</button>${armBtn('sdel', 'sDel', 'Delete scenario')}</div>
+  </div>`;
+}
+function slotHTML(s, sl, si){
+  const g = grp(sl.gid), sel = curSel(sl);
+  const head = `<div class="slot-h">
+    <div class="row" style="gap:0">${iconBtn('slotUp','Move up',I.up,`data-si="${si}" ${si === 0 ? 'disabled' : ''}`)}${iconBtn('slotDown','Move down',I.down,`data-si="${si}" ${si === s.slots.length - 1 ? 'disabled' : ''}`)}</div>
+    <span class="gname">${esc(g.name)} <span class="badge">${modeName(g.mode)}</span></span>
+    <label>Times<input data-bind="s.slotqty" data-si="${si}" value="${esc(sl.qty)}" aria-label="Times this group counts"></label>
+    ${iconBtn('slotDel', 'Remove group from scenario', I.x, `data-si="${si}"`)}</div>`;
+  const opts = g.members.map((m, i) => {
+    const c = comp(m.cid); if (!c) return '';
+    const picked = sel.includes(i), excl = (sl.excl || []).includes(m.cid);
+    let ctl = '';
+    if (g.mode === 'one') ctl = `<input type="radio" name="sel-${si}" data-bind="s.sel" data-si="${si}" data-cid="${m.cid}" ${picked ? 'checked' : ''} aria-label="Choose ${esc(c.name)}">`;
+    else if (g.mode === 'any') ctl = `<input type="checkbox" data-bind="s.sel" data-si="${si}" data-cid="${m.cid}" ${picked ? 'checked' : ''} aria-label="Include ${esc(c.name)}">`;
+    else ctl = '<span class="muted">•</span>';
+    const ex = g.mode === 'all' ? '' : `<label class="ex" title="Include this option when exploring combinations"><input type="checkbox" data-bind="s.excl" data-si="${si}" data-cid="${m.cid}" ${excl ? '' : 'checked'}>explore</label>`;
+    return `<div class="opt ${picked ? 'picked' : ''} ${excl ? 'off' : ''}">${ctl}<span class="nm">${esc(c.name)}${String(m.qty).trim() && m.qty !== '1' ? ` <span class="badge">× ${esc(m.qty)}</span>` : ''}</span><span class="chips">${chips(c)}</span>${ex}</div>`;
+  }).join('') || '<div class="empty" style="padding:8px 10px">This group has no components.</div>';
+  return `<div class="slot">${head}${opts}</div>`;
+}
+
+/* ---- summary region ---- */
+function summaryHTML(){
+  const s = curS(); if (!s) return '';
+  const ev = evaluate(s, curPick(s));
+  const lims = s.limits.filter(l => l.k);
+  const fails = ev.checks.filter(c => !c.ok);
+  let verdict;
+  if (!lims.length && !ev.conflicts.length) verdict = `<div class="verdict none"><div>No limits yet<small>Add limits above to define the box this design has to fit.</small></div></div>`;
+  else if (ev.valid) verdict = `<div class="verdict ok"><div>Fits the box<small>Every limit holds and all compat_ values agree.</small></div></div>`;
+  else verdict = `<div class="verdict bad"><div>Doesn’t fit<small>${[...fails.map(c => `${esc(c.l.k)} is ${fmt(c.a)}, wanted ${esc(c.l.op)} ${esc(c.l.v)}`), ...ev.conflicts.map(c => `${esc(c.k)} has no common value`)].join(' · ')}</small></div></div>`;
+
+  const gauges = ev.checks.filter(c => !isNaN(c.L)).map(c => {
+    const frac = c.L === 0 ? (c.a === 0 ? 0 : 1) : c.l.op === '>=' ? Math.min(1, c.a / c.L) : Math.min(1, c.a / c.L);
+    const head = c.l.op === '<=' ? (c.ok ? `${fmt(c.L - c.a)} to spare` : `${fmt(c.a - c.L)} over`) : c.l.op === '>=' ? (c.ok ? `${fmt(c.a - c.L)} above minimum` : `${fmt(c.L - c.a)} short`) : (c.ok ? 'exact' : 'not equal');
+    return `<div class="gauge ${c.ok ? 'ok' : 'bad'}"><div class="gl"><span class="rowkey">${esc(c.l.k)}</span><b>${fmt(c.a)} ${esc(c.l.op)} ${fmt(c.L)}</b></div>
+      <div class="bar"><div class="fill" style="width:${Math.round(frac * 100)}%"></div></div><div class="gs">${head}</div></div>`;
+  }).join('');
+
+  const keys = [...new Set([...Object.keys(ev.totals), ...lims.map(l => l.k)])].filter(opOf);
+  const cols = s.slots.map((sl, si) => ({si, g: grp(sl.gid)}));
+  const table = keys.length ? `<div class="scroll"><table><thead><tr><th>Attribute</th>${cols.map(c => `<th>${esc(c.g.name)}</th>`).join('')}<th>Whole scenario</th></tr></thead><tbody>
+    ${keys.map(k => { const t = ev.totals[k], op = opOf(k), bad = (t && !t.ok) || ev.checks.some(c => c.l.k === k && !c.ok);
+      const wide = ['list','compat','first','last'].includes(op);
+      return `<tr><td><span class="rowkey">${esc(k)}</span> <span class="muted" style="font-size:12px">${OPS[op][0]}</span></td>
+        ${cols.map(c => { const r = ev.slotTotals[c.si][k]; return `<td class="${r && !r.ok ? 'bad' : ''} ${wide ? 'txt' : ''}">${r ? esc(r.text) : '<span class="muted">·</span>'}</td>`; }).join('')}
+        <td class="tot ${bad ? 'bad' : ''} ${wide ? 'txt' : ''}" ${t?.detail ? `title="${esc(t.detail.join('\n'))}"` : ''}>${t ? esc(t.text) : '0'}</td></tr>`; }).join('')}
+    </tbody></table></div>` : '<div class="empty">No attributes with a prefix yet. Try agg_cost on a component.</div>';
+
+  const notes = [
+    ...ev.conflicts.map(c => `<li class="bad"><b class="rowkey">${esc(c.k)}</b> conflict: ${esc(c.detail.join('; '))}</li>`),
+    ...Object.values(ev.totals).filter(t => !t.ok && t.op !== 'compat').map(t => `<li class="w"><b class="rowkey">${esc(t.k)}</b> has a value that isn’t a number.</li>`),
+    ...[...ev.issues].map(m => `<li class="w">${esc(m)}</li>`),
+    ...s.slots.map((sl, si) => { const g = grp(sl.gid); return g.mode === 'one' && !curSel(sl).length ? `<li class="w">Nothing chosen in “${esc(g.name)}”.</li>` : ''; })
+  ].join('');
+  return `<div class="card"><h3>Current design</h3>${verdict}${gauges ? `<div class="gauges">${gauges}</div>` : ''}${table}${notes ? `<ul class="notes">${notes}</ul>` : ''}</div>`;
+}
+
+/* ---- explorer region ---- */
+function exploreHTML(){
+  const s = curS(); if (!s) return '';
+  const ex = explore(s);
+  if (ex.tooMany) return `<div class="card"><h3>Explore combinations</h3><p class="muted">That’s ${ex.total.toLocaleString()} combinations, which is too many to list. Untick “explore” on some options, or trim variable values, to narrow it down.</p></div>`;
+  const rows = ex.rows; ui.rows = rows;
+  const fit = rows.filter(r => r.ev.valid).length;
+  const lims = s.limits.filter(l => l.k).map(l => l.k);
+  const mk = new Set(lims.filter(k => NUMERIC_OPS.includes(opOf(k))));
+  rows.forEach(r => Object.values(r.ev.totals).forEach(t => NUMERIC_OPS.includes(t.op) && mk.add(t.k)));
+  const metrics = [...mk].sort((a, b) => (lims.includes(b) - lims.includes(a)) || a.localeCompare(b));
+  const sk = metrics.includes(ui.sortK) ? ui.sortK : metrics[0];
+  const dimSlots = s.slots.map((sl, si) => ({sl, si, g: grp(sl.gid)})).filter(d => ex.slotOpts[d.si].length > 1);
+  const dimVars = ex.varDefs.map((v, k) => ({v, k})).filter(d => d.v.vals.length > 1);
+  const val = (r, k) => { const t = r.ev.totals[k]; return t && typeof t.value === 'number' ? t.value : 0; };
+  let shown = rows.map((r, ri) => ({r, ri})).filter(x => !ui.onlyFit || x.r.ev.valid);
+  if (sk) shown.sort((a, b) => (val(a.r, sk) - val(b.r, sk)) * ui.sortDir);
+  const total = shown.length; shown = shown.slice(0, 200);
+  const label = (r, si) => r.pick.slots[si].map(i => comp(grp(s.slots[si].gid).members[i].cid)?.name).join(' + ') || 'none';
+  const why = r => [...r.ev.checks.filter(c => !c.ok).map(c => `${c.l.k} ${fmt(c.a)} ${c.l.op} ${c.l.v}`), ...r.ev.conflicts.map(c => c.k + ' conflict')].join('; ');
+  return `<div class="card"><div class="split"><h3 style="margin:0">Explore combinations <span class="hint">${rows.length.toLocaleString()} possible · <b style="color:${fit ? 'var(--ok)' : 'var(--bad)'}">${fit.toLocaleString()} fit</b></span></h3>
+    <label class="row muted"><input type="checkbox" data-bind="onlyFit" ${ui.onlyFit ? 'checked' : ''}> Only show designs that fit</label></div>
+    <div class="scroll" style="margin-top:8px"><table><thead><tr>
+      ${dimSlots.map(d => `<th>${esc(d.g.name)}</th>`).join('')}${dimVars.map(d => `<th>${esc(d.v.name)}</th>`).join('')}
+      ${metrics.map(k => `<th><button class="th ${k === sk ? 'on' : ''}" data-act="sortBy" data-k="${esc(k)}">${esc(k)} ${k === sk ? (ui.sortDir > 0 ? '▲' : '▼') : ''}</button></th>`).join('')}
+      <th>Fits?</th><th></th></tr></thead><tbody>
+    ${shown.map(({r, ri}) => `<tr class="${r.ev.valid ? 'fit' : 'nofit'}">
+      ${dimSlots.map(d => `<td class="txt">${esc(label(r, d.si))}</td>`).join('')}${dimVars.map(d => `<td>${fmt(d.v.vals[r.vi[d.k]])}</td>`).join('')}
+      ${metrics.map(k => { const bad = r.ev.checks.some(c => c.l.k === k && !c.ok); return `<td class="${bad ? 'bad' : ''}">${fmt(val(r, k))}</td>`; }).join('')}
+      <td class="txt ${r.ev.valid ? 'ok' : 'bad'}" title="${esc(why(r))}">${r.ev.valid ? 'Yes' : esc(why(r) || 'No')}</td>
+      <td><button class="btn sm" data-act="applyRow" data-ri="${ri}">Use this</button></td></tr>`).join('') || `<tr><td class="txt muted" colspan="${dimSlots.length + dimVars.length + metrics.length + 2}">Nothing fits yet. Loosen a limit, or add more options.</td></tr>`}
+    </tbody></table></div>
+    ${total > 200 ? `<p class="muted">Showing the first 200 of ${total.toLocaleString()}.</p>` : ''}
+    ${!dimSlots.length && !dimVars.length ? '<p class="muted">Nothing varies yet. Add a group with alternatives, or a variable with several values.</p>' : ''}</div>`;
+}
+
+/* ============ actions ============ */
+const newId = () => uid();
+function removeComponent(id){
+  doc.components = doc.components.filter(c => c.id !== id);
+  doc.groups.forEach(g => g.members = g.members.filter(m => m.cid !== id));
+  ui.cid = doc.components[0]?.id || null;
+}
+function act(a, el){
+  const i = +el.dataset.i, si = +el.dataset.si, id = el.dataset.id;
+  const c = curC(), g = curG(), s = curS();
+  switch (a){
+    case 'tab': ui.tab = el.dataset.tab; ui.search = ''; ui.armed = null; return render();
+    case 'projNew': addProject({id: newId(), name: 'Untitled project', components: [], groups: [], scenarios: []}); return render();
+    case 'projDel': if (arm('pdel')){ store.del('pp.doc.' + doc.id); store.del('pp.sync.' + doc.id); index = index.filter(p => p.id !== doc.id); saveIndex(); openProject(index[0].id); render(); } return;
+    case 'toggleData': ui.data = !ui.data; ui.msg = ''; return render();
+    case 'dataCopy': { const ta = $('#exportTa'); ta.select(); let ok = false;
+      try { document.execCommand('copy'); ok = true; } catch(e){}
+      ui.msg = ok ? 'Copied.' : 'Select the text and copy it with Ctrl/Cmd+C.'; return render(); }
+    case 'dataImport': { try { const d = JSON.parse($('#importTa').value);
+        if (!Array.isArray(d.components) || !Array.isArray(d.groups) || !Array.isArray(d.scenarios)) throw 0;
+        d.id = newId(); d.name = (d.name || 'Imported') + ' (imported)'; addProject(d); ui.data = false; ui.msg = ''; render();
+      } catch(e){ ui.msg = 'That doesn’t look like exported project JSON.'; render(); } return; }
+    case 'dataExamples': [seedPC(), seedTrip()].forEach(d => { store.set('pp.doc.' + d.id, JSON.stringify(d)); index.push({id: d.id, name: d.name}); }); saveIndex(); ui.msg = 'Examples added to the project list.'; return render();
+
+    case 'toggleSync': ui.sync = !ui.sync; sync.msg = ''; render(); if (ui.sync && sync.mode === 'on') syncCheck(); return;
+    case 'syncCheck': return withBusy(() => syncCheck());
+    case 'syncLogin': return syncLogin();
+    case 'syncLogout': return syncLogout();
+    case 'syncPush': return withBusy(() => syncPush(false));
+    case 'syncForce': return withBusy(() => syncPush(true));
+    case 'syncPull': return withBusy(() => syncPull());
+    case 'syncTakeTheirs': if (arm('take')) return withBusy(() => syncPull()); return;
+    case 'syncKeepBoth': return withBusy(() => syncCopy(doc.id, null));
+    case 'syncRestore': return withBusy(() => syncCopy(doc.id, +el.dataset.rev));
+    case 'syncDownload': return withBusy(() => syncDownload(id));
+
+    case 'cNew': { const n = {id: newId(), name: 'New component', notes: '', attrs: [{k: 'agg_cost', v: '0'}]}; doc.components.push(n); ui.cid = n.id; ui.tab = 'components'; save(); return render('[data-bind="c.name"]'); }
+    case 'cSel': ui.cid = id; ui.armed = null; return render();
+    case 'cDup': if (c){ const n = JSON.parse(JSON.stringify(c)); n.id = newId(); n.name += ' copy'; doc.components.push(n); ui.cid = n.id; save(); render(); } return;
+    case 'cDel': if (c && arm('cdel')){ removeComponent(c.id); save(); render(); } return;
+    case 'addAttr': if (c){ c.attrs.push({k: '', v: ''}); save(); render(`[data-bind="a.k"][data-i="${c.attrs.length - 1}"]`); } return;
+    case 'delAttr': if (c){ c.attrs.splice(i, 1); save(); render(); } return;
+    case 'gotoC': ui.cid = id; ui.tab = 'components'; ui.search = ''; return render();
+
+    case 'gNew': { const n = {id: newId(), name: 'New group', mode: 'one', members: []}; doc.groups.push(n); ui.gid = n.id; save(); return render('[data-bind="g.name"]'); }
+    case 'gSel': ui.gid = id; ui.armed = null; return render();
+    case 'gotoG': ui.gid = id; ui.tab = 'groups'; ui.search = ''; return render();
+    case 'gDup': if (g){ const n = JSON.parse(JSON.stringify(g)); n.id = newId(); n.name += ' copy'; doc.groups.push(n); ui.gid = n.id; save(); render(); } return;
+    case 'gDel': if (g && arm('gdel')){ doc.groups = doc.groups.filter(x => x.id !== g.id); ui.gid = doc.groups[0]?.id || null; save(); render(); } return;
+    case 'gNewComp': if (g){ const n = {id: newId(), name: 'New component', notes: '', attrs: [{k: 'agg_cost', v: '0'}]}; doc.components.push(n); g.members.push({cid: n.id, qty: '1'}); ui.cid = n.id; ui.tab = 'components'; save(); render('[data-bind="c.name"]'); } return;
+    case 'mUp': if (g){ move(g.members, i, -1); save(); render(); } return;
+    case 'mDown': if (g){ move(g.members, i, 1); save(); render(); } return;
+    case 'mDel': if (g){ g.members.splice(i, 1); save(); render(); } return;
+    case 'gotoS': ui.sid = id; ui.tab = 'scenarios'; ui.search = ''; return render();
+
+    case 'sNew': { const n = {id: newId(), name: 'New scenario', vars: [], limits: [], slots: []}; doc.scenarios.push(n); ui.sid = n.id; save(); return render('[data-bind="s.name"]'); }
+    case 'sSel': ui.sid = id; ui.armed = null; return render();
+    case 'sDup': if (s){ const n = JSON.parse(JSON.stringify(s)); n.id = newId(); n.name += ' copy'; doc.scenarios.push(n); ui.sid = n.id; save(); render(); } return;
+    case 'sDel': if (s && arm('sdel')){ doc.scenarios = doc.scenarios.filter(x => x.id !== s.id); ui.sid = doc.scenarios[0]?.id || null; save(); render(); } return;
+    case 'addVar': if (s){ s.vars.push({name: '', values: '1,2,3', cur: 0}); save(); render(`[data-bind="v.name"][data-i="${s.vars.length - 1}"]`); } return;
+    case 'delVar': if (s){ s.vars.splice(i, 1); save(); render(); } return;
+    case 'addLimit': if (s){ s.limits.push({k: 'agg_cost', op: '<=', v: ''}); save(); render(`[data-bind="l.v"][data-i="${s.limits.length - 1}"]`); } return;
+    case 'delLimit': if (s){ s.limits.splice(i, 1); save(); render(); } return;
+    case 'slotUp': if (s){ move(s.slots, si, -1); save(); render(); } return;
+    case 'slotDown': if (s){ move(s.slots, si, 1); save(); render(); } return;
+    case 'slotDel': if (s){ s.slots.splice(si, 1); save(); render(); } return;
+    case 'sortBy': if (ui.sortK === el.dataset.k) ui.sortDir *= -1; else { ui.sortK = el.dataset.k; ui.sortDir = 1; } return fillRegions(['explore']);
+    case 'applyRow': { const row = ui.rows[+el.dataset.ri]; if (!s || !row) return;
+      s.slots.forEach((sl, k) => { const gg = grp(sl.gid); if (gg && gg.mode !== 'all') sl.sel = row.pick.slots[k].map(x => gg.members[x].cid); });
+      s.vars.filter(v => v.name).forEach((v, k) => { v.cur = row.vi[k]; });
+      save(); return render(); }
+  }
+}
+
+/* text fields update live; selects and checkboxes re-render on change */
+function bind(el, isChange){
+  const b = el.dataset.bind, i = +el.dataset.i, si = +el.dataset.si, v = el.value;
+  const c = curC(), g = curG(), s = curS();
+  const text = el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !['checkbox', 'radio'].includes(el.type));
+  if (text === isChange) return;                         // text → 'input' only, others → 'change' only
+  const touch = (...regions) => { save(); fillRegions(regions); };
+  switch (b){
+    case 'projSel': openProject(v); return render();
+    case 'projName': doc.name = v; { const e = index.find(p => p.id === doc.id); if (e) e.name = v; const o = $('#app select[data-bind="projSel"] option:checked'); if (o) o.textContent = v; } return save();
+    case 'syncNote': sync.note = v; return;
+    case 'syncDevice': sync.device = v; store.set('pp.device', v); return;
+    case 'search': ui.search = v; return fillRegions(['list']);
+    case 'onlyFit': ui.onlyFit = el.checked; return fillRegions(['explore']);
+
+    case 'c.name': c.name = v; return touch('list');
+    case 'c.notes': c.notes = v; return save();
+    case 'a.k': c.attrs[i].k = v.trim(); { const n = el.closest('.arow')?.querySelector('.opnote'); if (n) n.textContent = opLabel(v.trim()); } return touch('list');
+    case 'a.v': c.attrs[i].v = v; return touch('list');
+
+    case 'g.name': g.name = v; return touch('list');
+    case 'g.mode': g.mode = v; save(); return render();
+    case 'g.addMember': if (v){ g.members.push({cid: v, qty: '1'}); save(); render(); } return;
+    case 'm.qty': g.members[i].qty = v; return save();
+
+    case 's.name': s.name = v; return touch('list');
+    case 's.slotqty': s.slots[si].qty = v; return touch('summary');
+    case 's.addSlot': if (v){ s.slots.push({gid: v, qty: '1', sel: [], excl: []}); save(); render(); } return;
+    case 's.sel': { const sl = s.slots[si], gg = grp(sl.gid), cid = el.dataset.cid;
+      if (gg.mode === 'one') sl.sel = [cid]; else sl.sel = el.checked ? [...new Set([...sl.sel, cid])] : sl.sel.filter(x => x !== cid);
+      save(); return render(); }
+    case 's.excl': { const sl = s.slots[si], cid = el.dataset.cid; sl.excl = el.checked ? sl.excl.filter(x => x !== cid) : [...sl.excl, cid]; save(); return render(); }
+    case 'v.name': s.vars[i].name = v; return touch('summary');
+    case 'v.values': s.vars[i].values = v; return touch('summary');
+    case 'v.cur': s.vars[i].cur = +v; save(); return render();
+    case 'l.k': s.limits[i].k = v.trim(); return touch('summary');
+    case 'l.v': s.limits[i].v = v; return touch('summary');
+    case 'l.op': s.limits[i].op = v; save(); return render();
+  }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) act(b.dataset.act, b); });
+document.addEventListener('input', e => { const b = e.target.closest('[data-bind]'); if (b) bind(b, false); });
+document.addEventListener('change', e => { const b = e.target.closest('[data-bind]'); if (b) bind(b, true); });
+
+/* ============ sync with the Python server (hidden when the server isn't there) ============ */
+const sync = {mode: 'unknown', remote: null, journal: [], busy: false, msg: '', note: '',
+  device: store.get('pp.device') || ('Browser ' + Math.random().toString(36).slice(2, 5))};
+store.set('pp.device', sync.device);
+
+async function api(method, path, body){
+  const opt = {method, credentials: 'same-origin', headers: {'X-Sketchbook': '1'}};
+  if (body !== undefined){ opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  try {
+    const r = await fetch('/api' + path, opt);
+    let data = null; try { data = await r.json(); } catch(e){}
+    return {ok: r.ok, status: r.status, data};
+  } catch(e){ return {ok: false, status: 0, data: null}; }
+}
+const metaGet = id => { let x = null; try { x = JSON.parse(store.get('pp.sync.' + id) || 'null'); } catch(e){} x = x || {}; return {baseRev: x.baseRev || 0, snap: x.snap ?? null}; };
+const metaSet = (id, m) => store.set('pp.sync.' + id, JSON.stringify(m));
+const when = iso => { try { return new Date(iso).toLocaleString([], {dateStyle: 'medium', timeStyle: 'short'}); } catch(e){ return iso; } };
+
+function diffSummary(oldStr, d){
+  if (!oldStr) return `First push: ${d.components.length} components, ${d.groups.length} groups, ${d.scenarios.length} scenarios`;
+  let o; try { o = JSON.parse(oldStr); } catch(e){ return 'Edited'; }
+  const parts = [];
+  if (o.name !== d.name) parts.push('renamed project');
+  for (const [k, label] of [['components', 'component'], ['groups', 'group'], ['scenarios', 'scenario']]){
+    const om = new Map((o[k] || []).map(x => [x.id, x])), nm = new Map(d[k].map(x => [x.id, x]));
+    const add = [...nm.values()].filter(x => !om.has(x.id));
+    const del = [...om.values()].filter(x => !nm.has(x.id));
+    const chg = [...nm.values()].filter(x => om.has(x.id) && JSON.stringify(om.get(x.id)) !== JSON.stringify(x));
+    const names = a => a.slice(0, 3).map(x => '“' + x.name + '”').join(', ') + (a.length > 3 ? ' +' + (a.length - 3) : '');
+    if (add.length) parts.push(`added ${label}${add.length > 1 ? 's' : ''} ${names(add)}`);
+    if (chg.length) parts.push(`edited ${label}${chg.length > 1 ? 's' : ''} ${names(chg)}`);
+    if (del.length) parts.push(`removed ${label}${del.length > 1 ? 's' : ''} ${names(del)}`);
+  }
+  return parts.join('; ') || 'No content changes';
+}
+
+function syncState(){
+  const m = metaGet(doc.id), dirty = JSON.stringify(doc) !== m.snap;
+  if (!sync.remote) return {k: 'unknown', short: 'checking…', cls: '', dirty, label: 'Checking the server…'};
+  const r = sync.remote.find(p => p.id === doc.id);
+  if (!r) return {k: 'new', short: 'not pushed', cls: 'warn', dirty, remoteRev: 0, label: 'This project isn’t on the server yet.'};
+  const rr = r.rev;
+  if (rr === m.baseRev) return dirty
+    ? {k: 'ahead', short: 'local changes', cls: 'warn', dirty, remoteRev: rr, label: `You have changes since rev ${rr}.`}
+    : {k: 'synced', short: 'in sync · rev ' + rr, cls: 'ok', dirty, remoteRev: rr, label: `Same as the server (rev ${rr}).`};
+  if (rr > m.baseRev && !dirty) return {k: 'behind', short: 'server is newer', cls: 'bad', dirty, remoteRev: rr, label: `The server has rev ${rr}; you have rev ${m.baseRev}.`};
+  return {k: 'diverged', short: 'conflict', cls: 'bad', dirty, remoteRev: rr, label: `Changed here, and the server moved to rev ${rr} (you started from rev ${m.baseRev}).`};
+}
+
+function syncPanelHTML(){
+  if (sync.mode === 'login') return `<div class="card"><h3>Sign in to your sync server</h3>
+    <div class="syncbar"><input id="syncPw" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password"><button class="btn primary" data-act="syncLogin">Sign in</button></div>
+    ${sync.msg ? `<p class="muted" style="margin:0">${esc(sync.msg)}</p>` : ''}</div>`;
+  const st = syncState(), dis = sync.busy ? 'disabled' : '';
+  const b = (a, label, cls = '') => `<button class="btn ${cls}" data-act="${a}" ${dis}>${label}</button>`;
+  let buttons = '', hint = '';
+  if (st.k === 'new' || st.k === 'ahead') buttons = b('syncPush', 'Push to server', 'primary');
+  else if (st.k === 'behind') buttons = b('syncPull', 'Pull from server', 'primary');
+  else if (st.k === 'diverged'){
+    buttons = b('syncForce', 'Keep mine and push on top') + b('syncKeepBoth', 'Keep both') + armBtn('take', 'syncTakeTheirs', 'Take theirs');
+    hint = '<p class="muted" style="margin:0 0 8px"><b>Keep mine</b> saves your version as the next revision; the server’s version stays in the journal. <b>Keep both</b> saves the server’s version as a separate local copy. <b>Take theirs</b> replaces your local changes.</p>';
+  }
+  const canNote = ['new', 'ahead', 'diverged'].includes(st.k);
+  const absent = (sync.remote || []).filter(p => !index.some(i => i.id === p.id));
+  return `<div class="card">
+    <div class="split"><h3 style="margin:0">Sync <span class="badge ${st.cls}">${esc(st.short)}</span></h3>
+      <div class="row muted" style="font-size:13px">This device <input data-bind="syncDevice" value="${esc(sync.device)}" aria-label="Device name" style="width:130px"><button class="btn sm ghost" data-act="syncLogout">Sign out</button></div></div>
+    <p style="margin:8px 0">${esc(st.label)}</p>
+    ${hint}
+    ${canNote ? `<div class="syncbar"><input data-bind="syncNote" value="${esc(sync.note)}" placeholder="What changed? (optional note for the journal)" aria-label="Journal note"></div>` : ''}
+    <div class="row">${buttons}${b('syncCheck', 'Check server')}${sync.busy ? '<span class="muted">Working…</span>' : ''}</div>
+    ${sync.msg ? `<p class="muted" style="margin:8px 0 0">${esc(sync.msg)}</p>` : ''}
+    ${sync.journal.length ? `<div class="section"><h3>Journal <span class="hint">Every push is kept. Restore saves that version as a separate local copy.</span></h3>
+      ${sync.journal.map(j => `<div class="jr"><span class="rv">r${j.rev}</span><span>${esc(j.summary || 'No summary')}${j.note ? `<small>“${esc(j.note)}”</small>` : ''}<small>${esc(when(j.at))} · ${esc(j.device || 'unknown device')}</small></span>
+        <button class="btn sm" data-act="syncRestore" data-rev="${j.rev}" ${dis}>Restore as copy</button></div>`).join('')}</div>` : ''}
+    ${absent.length ? `<div class="section"><h3>On the server, not on this computer</h3>${absent.map(p => `<div class="split" style="padding:3px 0"><span>${esc(p.name)} <span class="muted">rev ${p.rev}</span></span><button class="btn sm" data-act="syncDownload" data-id="${esc(p.id)}" ${dis}>Download</button></div>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+function refreshSyncUI(){
+  const btn = $('#syncBtn');
+  if (btn){
+    btn.hidden = !(sync.mode === 'on' || sync.mode === 'login');
+    const bd = $('#syncBadge'), s = sync.mode === 'login' ? {short: 'sign in', cls: ''} : syncState();
+    if (bd){ bd.textContent = s.short; bd.className = 'badge ' + s.cls; }
+  }
+  const p = $('#r-sync'), a = document.activeElement;
+  if (p && !(a && p.contains(a) && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA'))) p.innerHTML = syncPanelHTML();
+}
+async function withBusy(fn){
+  if (sync.busy) return;
+  sync.busy = true; refreshSyncUI();
+  try { await fn(); } catch(e){ sync.msg = 'Something went wrong: ' + (e && e.message || e); }
+  finally { sync.busy = false; render(); }
+}
+function expired(r){ if (r.status === 401){ sync.mode = 'login'; sync.msg = 'Your session ended. Sign in again.'; return true; } if (r.status === 0){ sync.msg = 'Can’t reach the server. Your local copy is unaffected.'; return true; } return false; }
+
+async function syncInit(){
+  const h = await api('GET', '/health');
+  if (!h.ok || !h.data || h.data.ok !== true){ sync.mode = 'off'; return; }
+  const me = await api('GET', '/me');
+  if (me.ok){ sync.mode = 'on'; await syncCheck(); } else sync.mode = 'login';
+  refreshSyncUI();
+}
+async function syncCheck(){
+  const r = await api('GET', '/projects');
+  if (expired(r)){ refreshSyncUI(); return; }
+  if (!r.ok){ sync.msg = (r.data && r.data.error) || 'Check failed.'; refreshSyncUI(); return; }
+  sync.mode = 'on'; sync.remote = r.data; sync.journal = [];
+  if (r.data.some(p => p.id === doc.id)){ const j = await api('GET', '/projects/' + doc.id + '/journal'); if (j.ok) sync.journal = j.data; }
+  refreshSyncUI();
+}
+async function syncLogin(){
+  const r = await api('POST', '/login', {password: ($('#syncPw') || {}).value || ''});
+  if (r.ok){ sync.mode = 'on'; sync.msg = ''; await syncCheck(); }
+  else sync.msg = r.status === 0 ? 'Can’t reach the server.' : (r.data && r.data.error) || 'Sign-in failed.';
+  refreshSyncUI();
+}
+async function syncLogout(){ await api('POST', '/logout'); sync.mode = 'login'; sync.remote = null; sync.journal = []; sync.msg = ''; render(); }
+
+async function syncPush(force){
+  const id = doc.id, st = syncState(), m = metaGet(id);
+  const base = force ? (st.remoteRev || 0) : m.baseRev;
+  const sent = JSON.stringify(doc), copy = JSON.parse(sent);
+  let summary = diffSummary(m.snap, copy); if (force) summary = `Overwrote rev ${base}. ` + summary;
+  const r = await api('POST', '/projects/' + id, {baseRev: base, doc: copy, note: sync.note.trim(), device: sync.device, summary});
+  if (expired(r)) return;
+  if (r.status === 409){ sync.msg = `The server moved on to rev ${r.data.rev} while you were working. Choose how to combine.`; return syncCheck(); }
+  if (!r.ok){ sync.msg = (r.data && r.data.error) || 'Push failed.'; return; }
+  metaSet(id, {baseRev: r.data.rev, snap: sent}); sync.note = ''; sync.msg = `Pushed as rev ${r.data.rev}.`;
+  await syncCheck();
+}
+function adoptRemote(rec, id){
+  const d = rec.doc; d.id = id;
+  store.set('pp.doc.' + id, JSON.stringify(d));
+  const e = index.find(p => p.id === id); if (e) e.name = d.name; else index.push({id, name: d.name});
+  saveIndex(); openProject(id); fixAll();
+  store.set('pp.doc.' + id, JSON.stringify(doc));         // store the normalised form, so it starts out clean
+  metaSet(id, {baseRev: rec.rev, snap: JSON.stringify(doc)});
+}
+async function syncPull(){
+  const id = doc.id, r = await api('GET', '/projects/' + id);
+  if (expired(r)) return;
+  if (!r.ok){ sync.msg = (r.data && r.data.error) || 'Pull failed.'; return; }
+  adoptRemote(r.data, id); sync.msg = `Pulled rev ${r.data.rev}.`; await syncCheck();
+}
+async function syncDownload(id){
+  const r = await api('GET', '/projects/' + id);
+  if (expired(r)) return;
+  if (!r.ok){ sync.msg = (r.data && r.data.error) || 'Download failed.'; return; }
+  adoptRemote(r.data, id); sync.msg = `Downloaded “${r.data.name}”.`; await syncCheck();
+}
+async function syncCopy(id, rev){
+  const r = await api('GET', '/projects/' + id + (rev ? '?rev=' + rev : ''));
+  if (expired(r)) return;
+  if (!r.ok){ sync.msg = (r.data && r.data.error) || 'Couldn’t fetch that version.'; return; }
+  const d = r.data.doc; d.id = uid(); d.name = `${d.name} (rev ${r.data.rev})`;
+  store.set('pp.doc.' + d.id, JSON.stringify(d)); index.push({id: d.id, name: d.name}); saveIndex();
+  sync.msg = `Saved rev ${r.data.rev} as a separate local project, “${d.name}”. Your current copy is unchanged.`;
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'syncPw') syncLogin(); });
+window.addEventListener('focus', () => { if (sync.mode === 'on' && !sync.busy) syncCheck(); });
+
+/* ============ start ============ */
+
+loadAll();
+render();
+syncInit();
+</script>
+</body>
+</html>
